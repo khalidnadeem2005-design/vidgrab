@@ -1,2205 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>VidGrab - Free YouTube Downloader</title>
-   <link rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>▶</text></svg>">
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-   <style>
-      * {
-         margin: 0;
-         padding: 0;
-         box-sizing: border-box
-      }
-
-      :root {
-         --bg: #0a0a1a;
-         --bg2: #0f0f23;
-         --card: #151530;
-         --card2: #1a1a3e;
-         --red: #ff0033;
-         --pink: #e94560;
-         --blue: #667eea;
-         --purple: #764ba2;
-         --green: #11998e;
-         --white: #ffffff;
-         --gray: #8892b0;
-         --gray2: #495670;
-         --grad: linear-gradient(135deg, #ff0033, #e94560, #ff6b6b);
-         --grad2: linear-gradient(135deg, #667eea, #764ba2);
-         --grad3: linear-gradient(135deg, #11998e, #38ef7d);
-         --r: 14px;
-         --r2: 20px;
-         --shadow: 0 20px 60px rgba(0, 0, 0, .4);
-      }
-
-      html {
-         scroll-behavior: smooth
-      }
-
-      body {
-         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-         background: var(--bg);
-         color: var(--white);
-         overflow-x: hidden;
-         line-height: 1.6
-      }
-
-      ::-webkit-scrollbar {
-         width: 6px
-      }
-
-      ::-webkit-scrollbar-track {
-         background: var(--bg)
-      }
-
-      ::-webkit-scrollbar-thumb {
-         background: var(--gray2);
-         border-radius: 3px
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-         background: var(--red)
-      }
-
-      ::selection {
-         background: rgba(255, 0, 51, .3)
-      }
-
-      a {
-         text-decoration: none;
-         color: inherit
-      }
-
-      button {
-         border: none;
-         cursor: pointer;
-         font-family: inherit
-      }
-
-      /* === BACKGROUND EFFECTS === */
-      .bg-grid {
-         position: fixed;
-         top: 0;
-         left: 0;
-         width: 100%;
-         height: 100%;
-         z-index: 0;
-         pointer-events: none;
-         background-image: radial-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px);
-         background-size: 40px 40px
-      }
-
-      .orb {
-         position: fixed;
-         border-radius: 50%;
-         filter: blur(100px);
-         opacity: .05;
-         pointer-events: none;
-         z-index: 0
-      }
-
-      .orb1 {
-         width: 500px;
-         height: 500px;
-         background: var(--red);
-         top: -10%;
-         left: -10%;
-         animation: orbMove 20s ease-in-out infinite
-      }
-
-      .orb2 {
-         width: 400px;
-         height: 400px;
-         background: var(--blue);
-         bottom: -10%;
-         right: -10%;
-         animation: orbMove 25s ease-in-out infinite reverse
-      }
-
-      .orb3 {
-         width: 300px;
-         height: 300px;
-         background: var(--green);
-         top: 40%;
-         left: 40%;
-         animation: orbMove 18s ease-in-out infinite 5s
-      }
-
-      @keyframes orbMove {
-
-         0%,
-         100% {
-            transform: translate(0, 0)
-         }
-
-         25% {
-            transform: translate(60px, -40px)
-         }
-
-         50% {
-            transform: translate(-30px, 60px)
-         }
-
-         75% {
-            transform: translate(40px, 30px)
-         }
-      }
-
-      .particles {
-         position: fixed;
-         top: 0;
-         left: 0;
-         width: 100%;
-         height: 100%;
-         z-index: 0;
-         pointer-events: none;
-         overflow: hidden
-      }
-
-      .particle {
-         position: absolute;
-         border-radius: 50%;
-         opacity: .12;
-         animation: rise linear infinite
-      }
-
-      @keyframes rise {
-         0% {
-            transform: translateY(100vh) scale(0);
-            opacity: 0
-         }
-
-         15% {
-            opacity: .12;
-            transform: translateY(85vh) scale(1)
-         }
-
-         85% {
-            opacity: .08
-         }
-
-         100% {
-            transform: translateY(-5vh) scale(.4);
-            opacity: 0
-         }
-      }
-
-      /* === HEADER === */
-      header {
-         position: fixed;
-         top: 0;
-         left: 0;
-         width: 100%;
-         z-index: 1000;
-         transition: .4s;
-         border-bottom: 1px solid transparent
-      }
-
-      header.glass {
-         background: rgba(10, 10, 26, .88);
-         backdrop-filter: blur(25px);
-         -webkit-backdrop-filter: blur(25px);
-         border-color: rgba(255, 255, 255, .04);
-         box-shadow: 0 4px 30px rgba(0, 0, 0, .3)
-      }
-
-      nav {
-         max-width: 1280px;
-         margin: 0 auto;
-         padding: 18px 35px;
-         display: flex;
-         justify-content: space-between;
-         align-items: center
-      }
-
-      .logo {
-         display: flex;
-         align-items: center;
-         gap: 12px;
-         font-size: 1.6rem;
-         font-weight: 800;
-         cursor: pointer;
-         letter-spacing: -.5px
-      }
-
-      .logo-icon {
-         width: 42px;
-         height: 42px;
-         background: var(--grad);
-         border-radius: 12px;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         font-size: 1.1rem;
-         color: #fff;
-         box-shadow: 0 4px 15px rgba(255, 0, 51, .3)
-      }
-
-      .nav-links {
-         display: flex;
-         list-style: none;
-         gap: 32px;
-         align-items: center
-      }
-
-      .nav-links a {
-         color: var(--gray);
-         font-weight: 500;
-         font-size: .95rem;
-         transition: .3s;
-         position: relative;
-         padding: 5px 0
-      }
-
-      .nav-links a:hover {
-         color: var(--white)
-      }
-
-      .nav-links a::after {
-         content: '';
-         position: absolute;
-         bottom: 0;
-         left: 0;
-         width: 0;
-         height: 2px;
-         background: var(--grad);
-         transition: .3s;
-         border-radius: 2px
-      }
-
-      .nav-links a:hover::after {
-         width: 100%
-      }
-
-      .gh-btn {
-         padding: 10px 22px;
-         background: rgba(255, 255, 255, .06);
-         border-radius: 50px;
-         color: var(--white) !important;
-         font-weight: 600;
-         border: 1px solid rgba(255, 255, 255, .1);
-         transition: .3s !important;
-         display: flex;
-         align-items: center;
-         gap: 8px
-      }
-
-      .gh-btn:hover {
-         background: var(--red);
-         border-color: var(--red);
-         transform: translateY(-2px);
-         box-shadow: 0 8px 25px rgba(255, 0, 51, .3)
-      }
-
-      .gh-btn::after {
-         display: none !important
-      }
-
-      .menu-btn {
-         display: none;
-         background: none;
-         color: var(--white);
-         font-size: 1.4rem;
-         padding: 8px
-      }
-
-      /* === HERO === */
-      .hero {
-         min-height: 100vh;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         padding: 130px 30px 70px;
-         position: relative;
-         z-index: 1
-      }
-
-      .hero-inner {
-         text-align: center;
-         max-width: 850px;
-         width: 100%
-      }
-
-      .hero-inner>* {
-         animation: fadeUp .7s ease both
-      }
-
-      .hero-inner>*:nth-child(1) {
-         animation-delay: .1s
-      }
-
-      .hero-inner>*:nth-child(2) {
-         animation-delay: .2s
-      }
-
-      .hero-inner>*:nth-child(3) {
-         animation-delay: .3s
-      }
-
-      .hero-inner>*:nth-child(4) {
-         animation-delay: .4s
-      }
-
-      .hero-inner>*:nth-child(5) {
-         animation-delay: .5s
-      }
-
-      .hero-inner>*:nth-child(6) {
-         animation-delay: .6s
-      }
-
-      @keyframes fadeUp {
-         from {
-            opacity: 0;
-            transform: translateY(25px)
-         }
-
-         to {
-            opacity: 1;
-            transform: translateY(0)
-         }
-      }
-
-      .pill {
-         display: inline-flex;
-         align-items: center;
-         gap: 8px;
-         padding: 9px 22px;
-         background: rgba(255, 0, 51, .08);
-         border: 1px solid rgba(255, 0, 51, .25);
-         border-radius: 50px;
-         font-size: .85rem;
-         color: var(--pink);
-         font-weight: 600;
-         margin-bottom: 28px
-      }
-
-      .pill-dot {
-         width: 6px;
-         height: 6px;
-         background: var(--red);
-         border-radius: 50%;
-         animation: pulse2 1.5s infinite
-      }
-
-      @keyframes pulse2 {
-
-         0%,
-         100% {
-            opacity: 1;
-            transform: scale(1)
-         }
-
-         50% {
-            opacity: .3;
-            transform: scale(.7)
-         }
-      }
-
-      h1 {
-         font-size: clamp(2.2rem, 5.5vw, 4rem);
-         font-weight: 900;
-         line-height: 1.1;
-         margin-bottom: 22px;
-         letter-spacing: -1.5px
-      }
-
-      .grad {
-         background: var(--grad);
-         -webkit-background-clip: text;
-         -webkit-text-fill-color: transparent;
-         background-clip: text
-      }
-
-      .hero-inner>p {
-         font-size: 1.15rem;
-         color: var(--gray);
-         margin-bottom: 42px;
-         max-width: 580px;
-         margin-left: auto;
-         margin-right: auto;
-         line-height: 1.7
-      }
-
-      /* === SEARCH BOX === */
-      .search-box {
-         max-width: 720px;
-         margin: 0 auto 35px;
-         position: relative
-      }
-
-      .search-wrap {
-         display: flex;
-         gap: 10px;
-         padding: 8px;
-         background: var(--card);
-         border: 2px solid rgba(255, 255, 255, .06);
-         border-radius: 16px;
-         transition: .3s
-      }
-
-      .search-wrap:focus-within {
-         border-color: var(--red);
-         box-shadow: 0 0 40px rgba(255, 0, 51, .1)
-      }
-
-      .search-input-wrap {
-         flex: 1;
-         position: relative;
-         display: flex;
-         align-items: center
-      }
-
-      .search-input-wrap>i {
-         position: absolute;
-         left: 16px;
-         color: var(--gray2);
-         font-size: 1.1rem;
-         transition: .3s
-      }
-
-      .search-wrap:focus-within .search-input-wrap>i {
-         color: var(--red)
-      }
-
-      .search-input-wrap input {
-         width: 100%;
-         padding: 16px 45px 16px 48px;
-         background: transparent;
-         border: none;
-         color: var(--white);
-         font-size: 1.05rem;
-         outline: none
-      }
-
-      .search-input-wrap input::placeholder {
-         color: var(--gray2)
-      }
-
-      .clr-btn {
-         position: absolute;
-         right: 12px;
-         background: rgba(255, 255, 255, .06);
-         border: none;
-         color: var(--gray);
-         width: 28px;
-         height: 28px;
-         border-radius: 50%;
-         display: none;
-         align-items: center;
-         justify-content: center;
-         font-size: .75rem;
-         transition: .3s;
-         cursor: pointer
-      }
-
-      .clr-btn.show {
-         display: flex
-      }
-
-      .clr-btn:hover {
-         background: var(--red);
-         color: #fff;
-         transform: rotate(90deg)
-      }
-
-      .go-btn {
-         padding: 16px 32px;
-         background: var(--grad);
-         border-radius: 12px;
-         color: #fff;
-         font-size: 1rem;
-         font-weight: 700;
-         display: flex;
-         align-items: center;
-         gap: 10px;
-         transition: .3s;
-         white-space: nowrap;
-         position: relative;
-         overflow: hidden;
-         flex-shrink: 0
-      }
-
-      .go-btn::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: -100%;
-         width: 100%;
-         height: 100%;
-         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .15), transparent);
-         transition: .6s
-      }
-
-      .go-btn:hover::before {
-         left: 100%
-      }
-
-      .go-btn:hover {
-         transform: translateY(-2px);
-         box-shadow: 0 12px 35px rgba(255, 0, 51, .35)
-      }
-
-      .go-btn:disabled {
-         opacity: .5;
-         cursor: not-allowed;
-         transform: none !important;
-         box-shadow: none !important
-      }
-
-      .go-btn:disabled::before {
-         display: none
-      }
-
-      .tags {
-         display: flex;
-         justify-content: center;
-         gap: 18px;
-         flex-wrap: wrap;
-         margin-bottom: 15px
-      }
-
-      .tags span {
-         color: var(--gray);
-         font-size: .87rem;
-         display: flex;
-         align-items: center;
-         gap: 5px;
-         transition: .3s
-      }
-
-      .tags span:hover {
-         color: var(--white)
-      }
-
-      .tags span i {
-         color: #4caf50;
-         font-size: .7rem
-      }
-
-      .example {
-         color: var(--gray2);
-         font-size: .82rem;
-         margin-bottom: 50px
-      }
-
-      .example a {
-         color: var(--pink);
-         cursor: pointer;
-         border-bottom: 1px dashed var(--pink);
-         transition: .3s
-      }
-
-      .example a:hover {
-         color: var(--red)
-      }
-
-      /* === STATS === */
-      .stats {
-         display: flex;
-         justify-content: center;
-         gap: 55px;
-         flex-wrap: wrap
-      }
-
-      .stat {
-         text-align: center
-      }
-
-      .stat-num {
-         font-size: 2.2rem;
-         font-weight: 900;
-         background: var(--grad);
-         -webkit-background-clip: text;
-         -webkit-text-fill-color: transparent;
-         background-clip: text
-      }
-
-      .stat-lbl {
-         font-size: .82rem;
-         color: var(--gray);
-         margin-top: 4px;
-         font-weight: 500
-      }
-
-      /* === LOADER === */
-      .loader {
-         text-align: center;
-         padding: 60px 30px;
-         position: relative;
-         z-index: 1
-      }
-
-      .load-anim {
-         width: 60px;
-         height: 60px;
-         margin: 0 auto 20px;
-         position: relative
-      }
-
-      .load-anim::before,
-      .load-anim::after {
-         content: '';
-         position: absolute;
-         border-radius: 50%;
-         border: 3px solid transparent
-      }
-
-      .load-anim::before {
-         inset: 0;
-         border-top-color: var(--red);
-         animation: spin .8s linear infinite
-      }
-
-      .load-anim::after {
-         inset: 6px;
-         border-right-color: var(--pink);
-         animation: spin 1.2s linear infinite reverse
-      }
-
-      @keyframes spin {
-         to {
-            transform: rotate(360deg)
-         }
-      }
-
-      .loader p {
-         color: var(--gray);
-         font-size: 1.05rem
-      }
-
-      .loader .sub {
-         font-size: .85rem;
-         color: var(--gray2);
-         margin-top: 6px
-      }
-
-      /* === ERROR BOX === */
-      .err-box {
-         max-width: 500px;
-         margin: 0 auto;
-         padding: 30px;
-         background: var(--card);
-         border-radius: var(--r2);
-         border: 1px solid rgba(244, 67, 54, .2);
-         text-align: center;
-         position: relative;
-         z-index: 1
-      }
-
-      .err-box i {
-         font-size: 2.5rem;
-         color: #f44336;
-         margin-bottom: 15px
-      }
-
-      .err-box h3 {
-         margin-bottom: 8px;
-         font-size: 1.2rem
-      }
-
-      .err-box p {
-         color: var(--gray);
-         font-size: .95rem;
-         margin-bottom: 20px
-      }
-
-      .err-box button {
-         padding: 12px 28px;
-         background: var(--grad);
-         border-radius: 10px;
-         color: #fff;
-         font-weight: 600;
-         font-size: .95rem;
-         transition: .3s
-      }
-
-      .err-box button:hover {
-         transform: translateY(-2px);
-         box-shadow: 0 8px 25px rgba(255, 0, 51, .3)
-      }
-
-      /* === VIDEO RESULT === */
-      .result {
-         padding: 30px;
-         position: relative;
-         z-index: 1
-      }
-
-      .result-card {
-         max-width: 1080px;
-         margin: 0 auto;
-         background: var(--card);
-         border-radius: var(--r2);
-         overflow: hidden;
-         border: 1px solid rgba(255, 255, 255, .05);
-         box-shadow: var(--shadow);
-         animation: slideUp .5s ease
-      }
-
-      @keyframes slideUp {
-         from {
-            opacity: 0;
-            transform: translateY(30px)
-         }
-
-         to {
-            opacity: 1;
-            transform: translateY(0)
-         }
-      }
-
-      .result-top {
-         display: grid;
-         grid-template-columns: 440px 1fr
-      }
-
-      .thumb-wrap {
-         position: relative;
-         overflow: hidden;
-         background: #000
-      }
-
-      .thumb-wrap img {
-         width: 100%;
-         height: 100%;
-         object-fit: cover;
-         min-height: 260px;
-         transition: .6s ease
-      }
-
-      .thumb-wrap:hover img {
-         transform: scale(1.06)
-      }
-
-      .thumb-overlay {
-         position: absolute;
-         inset: 0;
-         background: linear-gradient(transparent 50%, rgba(0, 0, 0, .6));
-         pointer-events: none
-      }
-
-      .thumb-dur {
-         position: absolute;
-         bottom: 14px;
-         right: 14px;
-         background: rgba(0, 0, 0, .85);
-         color: #fff;
-         padding: 5px 14px;
-         border-radius: 8px;
-         font-size: .82rem;
-         font-weight: 700;
-         z-index: 2;
-         backdrop-filter: blur(4px);
-         letter-spacing: .5px
-      }
-
-      .thumb-play {
-         position: absolute;
-         top: 50%;
-         left: 50%;
-         transform: translate(-50%, -50%);
-         width: 65px;
-         height: 65px;
-         background: rgba(255, 0, 51, .9);
-         border-radius: 50%;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         font-size: 1.4rem;
-         z-index: 2;
-         opacity: 0;
-         transition: .3s;
-         cursor: pointer
-      }
-
-      .thumb-wrap:hover .thumb-play {
-         opacity: 1
-      }
-
-      .info-panel {
-         padding: 35px
-      }
-
-      .info-panel h2 {
-         font-size: 1.45rem;
-         font-weight: 700;
-         line-height: 1.4;
-         margin-bottom: 16px
-      }
-
-      .meta {
-         display: flex;
-         gap: 22px;
-         flex-wrap: wrap;
-         margin-bottom: 14px
-      }
-
-      .meta span {
-         color: var(--gray);
-         font-size: .87rem;
-         display: flex;
-         align-items: center;
-         gap: 7px
-      }
-
-      .meta span i {
-         color: var(--red);
-         font-size: .8rem
-      }
-
-      .desc {
-         color: var(--gray);
-         font-size: .88rem;
-         margin-bottom: 28px;
-         display: -webkit-box;
-         -webkit-line-: 2;
-         -webkit-box-orient: vertical;
-         overflow: hidden;
-         line-height: 1.6
-      }
-
-      /* === DOWNLOAD TABS === */
-      .dl-section {
-         padding: 0 35px 35px
-      }
-
-      .dl-header {
-         display: flex;
-         align-items: center;
-         justify-content: space-between;
-         margin-bottom: 20px;
-         flex-wrap: wrap;
-         gap: 15px
-      }
-
-      .dl-header h3 {
-         font-size: 1.15rem;
-         font-weight: 700;
-         display: flex;
-         align-items: center;
-         gap: 10px
-      }
-
-      .dl-header h3 i {
-         color: var(--red)
-      }
-
-      .dl-tabs {
-         display: flex;
-         gap: 6px;
-         background: rgba(255, 255, 255, .04);
-         border-radius: 10px;
-         padding: 4px
-      }
-
-      .dl-tab {
-         padding: 10px 20px;
-         border-radius: 8px;
-         font-size: .88rem;
-         font-weight: 600;
-         color: var(--gray);
-         transition: .3s;
-         cursor: pointer;
-         background: transparent
-      }
-
-      .dl-tab.active {
-         background: var(--red);
-         color: #fff;
-         box-shadow: 0 4px 15px rgba(255, 0, 51, .3)
-      }
-
-      .dl-tab:hover:not(.active) {
-         color: var(--white);
-         background: rgba(255, 255, 255, .06)
-      }
-
-      .dl-grid {
-         display: grid;
-         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-         gap: 12px
-      }
-
-      .dl-card {
-         display: flex;
-         align-items: center;
-         justify-content: space-between;
-         padding: 16px 18px;
-         background: rgba(255, 255, 255, .03);
-         border: 1px solid rgba(255, 255, 255, .06);
-         border-radius: 14px;
-         transition: .3s;
-         cursor: pointer;
-         text-decoration: none;
-         color: var(--white)
-      }
-
-      .dl-card:hover {
-         background: rgba(255, 0, 51, .08);
-         border-color: rgba(255, 0, 51, .3);
-         transform: translateY(-3px);
-         box-shadow: 0 10px 25px rgba(0, 0, 0, .2)
-      }
-
-      .dl-card-info .qual {
-         font-weight: 700;
-         font-size: .95rem;
-         margin-bottom: 3px
-      }
-
-      .dl-card-info .detail {
-         color: var(--gray);
-         font-size: .78rem
-      }
-
-      .dl-card-icon {
-         width: 40px;
-         height: 40px;
-         border-radius: 10px;
-         background: rgba(255, 0, 51, .1);
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         color: var(--red);
-         font-size: 1.1rem;
-         transition: .3s;
-         flex-shrink: 0
-      }
-
-      .dl-card:hover .dl-card-icon {
-         background: var(--red);
-         color: #fff;
-         transform: scale(1.1)
-      }
-
-      .dl-note {
-         display: flex;
-         align-items: center;
-         gap: 10px;
-         padding: 14px 18px;
-         background: rgba(102, 126, 234, .06);
-         border: 1px solid rgba(102, 126, 234, .15);
-         border-radius: 12px;
-         margin-top: 18px;
-         font-size: .85rem;
-         color: var(--gray)
-      }
-
-      .dl-note i {
-         color: var(--blue);
-         font-size: 1rem;
-         flex-shrink: 0
-      }
-
-      /* === SECTIONS === */
-      .section {
-         padding: 100px 30px;
-         position: relative;
-         z-index: 1
-      }
-
-      .section.alt {
-         background: var(--bg2)
-      }
-
-      .sec-t {
-         text-align: center;
-         font-size: clamp(1.8rem, 4vw, 2.6rem);
-         font-weight: 800;
-         margin-bottom: 12px;
-         letter-spacing: -.5px
-      }
-
-      .sec-s {
-         text-align: center;
-         color: var(--gray);
-         font-size: 1.05rem;
-         margin-bottom: 55px;
-         max-width: 520px;
-         margin-left: auto;
-         margin-right: auto
-      }
-
-      /* === STEPS === */
-      .steps-row {
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         gap: 20px;
-         max-width: 1000px;
-         margin: 0 auto;
-         flex-wrap: wrap
-      }
-
-      .step-card {
-         text-align: center;
-         padding: 42px 28px;
-         background: var(--card);
-         border-radius: var(--r2);
-         flex: 1;
-         min-width: 230px;
-         border: 1px solid rgba(255, 255, 255, .04);
-         transition: .4s;
-         position: relative;
-         overflow: hidden
-      }
-
-      .step-card::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: 0;
-         right: 0;
-         height: 3px;
-         background: var(--grad);
-         transform: scaleX(0);
-         transition: .4s;
-         transform-origin: left
-      }
-
-      .step-card:hover::before {
-         transform: scaleX(1)
-      }
-
-      .step-card:hover {
-         transform: translateY(-10px);
-         box-shadow: 0 25px 50px rgba(0, 0, 0, .3);
-         border-color: rgba(255, 255, 255, .08)
-      }
-
-      .step-n {
-         position: absolute;
-         top: 14px;
-         right: 20px;
-         font-size: 4rem;
-         font-weight: 900;
-         color: rgba(255, 255, 255, .02)
-      }
-
-      .step-i {
-         width: 80px;
-         height: 80px;
-         border-radius: var(--r2);
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         margin: 0 auto 22px;
-         font-size: 1.7rem;
-         color: #fff
-      }
-
-      .step-card h3 {
-         font-size: 1.1rem;
-         font-weight: 700;
-         margin-bottom: 8px
-      }
-
-      .step-card p {
-         color: var(--gray);
-         font-size: .92rem
-      }
-
-      .step-arr {
-         color: rgba(255, 255, 255, .1);
-         font-size: 1.5rem
-      }
-
-      /* === FEATURES === */
-      .feat-grid {
-         max-width: 1150px;
-         margin: 0 auto;
-         display: grid;
-         grid-template-columns: repeat(3, 1fr);
-         gap: 22px
-      }
-
-      .feat-card {
-         padding: 40px 26px;
-         background: var(--card);
-         border-radius: var(--r2);
-         border: 1px solid rgba(255, 255, 255, .04);
-         transition: .4s;
-         position: relative;
-         overflow: hidden
-      }
-
-      .feat-card::after {
-         content: '';
-         position: absolute;
-         top: -80%;
-         left: -80%;
-         width: 260%;
-         height: 260%;
-         background: radial-gradient(circle, rgba(255, 0, 51, .04) 0%, transparent 55%);
-         opacity: 0;
-         transition: .5s
-      }
-
-      .feat-card:hover::after {
-         opacity: 1
-      }
-
-      .feat-card:hover {
-         transform: translateY(-8px);
-         border-color: rgba(255, 255, 255, .08);
-         box-shadow: 0 20px 45px rgba(0, 0, 0, .25)
-      }
-
-      .feat-i {
-         width: 60px;
-         height: 60px;
-         border-radius: 16px;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         margin-bottom: 22px;
-         font-size: 1.4rem;
-         position: relative;
-         z-index: 1
-      }
-
-      .fi-r {
-         background: rgba(255, 0, 51, .08);
-         color: var(--red)
-      }
-
-      .fi-b {
-         background: rgba(102, 126, 234, .08);
-         color: var(--blue)
-      }
-
-      .fi-g {
-         background: rgba(17, 153, 142, .08);
-         color: var(--green)
-      }
-
-      .fi-p {
-         background: rgba(118, 75, 162, .08);
-         color: var(--purple)
-      }
-
-      .fi-o {
-         background: rgba(255, 165, 0, .08);
-         color: #ffa500
-      }
-
-      .fi-pk {
-         background: rgba(233, 69, 96, .08);
-         color: var(--pink)
-      }
-
-      .feat-card h3 {
-         font-size: 1.08rem;
-         font-weight: 700;
-         margin-bottom: 10px;
-         position: relative;
-         z-index: 1
-      }
-
-      .feat-card p {
-         color: var(--gray);
-         font-size: .9rem;
-         line-height: 1.65;
-         position: relative;
-         z-index: 1
-      }
-
-      /* === FAQ === */
-      .faq-list {
-         max-width: 760px;
-         margin: 0 auto
-      }
-
-      .faq-item {
-         margin-bottom: 12px;
-         background: var(--card);
-         border-radius: var(--r);
-         border: 1px solid rgba(255, 255, 255, .04);
-         overflow: hidden;
-         transition: .3s
-      }
-
-      .faq-item:hover {
-         border-color: rgba(255, 255, 255, .08)
-      }
-
-      .faq-item.on {
-         border-color: rgba(255, 0, 51, .2);
-         box-shadow: 0 8px 25px rgba(0, 0, 0, .15)
-      }
-
-      .faq-q {
-         padding: 22px 24px;
-         display: flex;
-         justify-content: space-between;
-         align-items: center;
-         cursor: pointer;
-         font-weight: 600;
-         font-size: .98rem;
-         gap: 15px;
-         transition: .2s;
-         user-select: none
-      }
-
-      .faq-q:hover {
-         background: rgba(255, 255, 255, .015)
-      }
-
-      .faq-q i {
-         color: var(--red);
-         transition: .4s;
-         font-size: .8rem;
-         flex-shrink: 0
-      }
-
-      .faq-item.on .faq-q i {
-         transform: rotate(180deg)
-      }
-
-      .faq-a {
-         max-height: 0;
-         overflow: hidden;
-         transition: .4s ease
-      }
-
-      .faq-a p {
-         padding: 0 24px 22px;
-         color: var(--gray);
-         line-height: 1.7;
-         font-size: .93rem
-      }
-
-      .faq-item.on .faq-a {
-         max-height: 220px
-      }
-
-      /* === CTA === */
-      .cta-card {
-         max-width: 700px;
-         margin: 0 auto;
-         padding: 60px 50px;
-         background: var(--card);
-         border-radius: 28px;
-         text-align: center;
-         border: 1px solid rgba(255, 255, 255, .05);
-         position: relative;
-         overflow: hidden
-      }
-
-      .cta-card::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: 0;
-         right: 0;
-         height: 4px;
-         background: var(--grad)
-      }
-
-      .cta-card h2 {
-         font-size: 2.2rem;
-         font-weight: 800;
-         margin-bottom: 14px
-      }
-
-      .cta-card>p {
-         color: var(--gray);
-         margin-bottom: 35px;
-         font-size: 1.05rem
-      }
-
-      .cta-main {
-         display: inline-flex;
-         align-items: center;
-         gap: 10px;
-         padding: 18px 42px;
-         background: var(--grad);
-         border-radius: 50px;
-         color: #fff;
-         font-size: 1.08rem;
-         font-weight: 700;
-         transition: .3s
-      }
-
-      .cta-main:hover {
-         transform: translateY(-3px);
-         box-shadow: 0 15px 40px rgba(255, 0, 51, .35)
-      }
-
-      /* === FOOTER === */
-      footer {
-         background: var(--bg);
-         border-top: 1px solid rgba(255, 255, 255, .04);
-         position: relative;
-         z-index: 1
-      }
-
-      .foot-grid {
-         max-width: 1150px;
-         margin: 0 auto;
-         padding: 60px 30px 30px;
-         display: grid;
-         grid-template-columns: 2.5fr 1fr 1fr 1fr;
-         gap: 40px
-      }
-
-      .foot-col .logo {
-         margin-bottom: 16px
-      }
-
-      .foot-col>p {
-         color: var(--gray);
-         font-size: .9rem;
-         line-height: 1.7;
-         margin-bottom: 18px
-      }
-
-      .foot-col h4 {
-         margin-bottom: 16px;
-         font-size: .98rem;
-         font-weight: 700
-      }
-
-      .foot-col ul {
-         list-style: none
-      }
-
-      .foot-col ul li {
-         margin-bottom: 10px
-      }
-
-      .foot-col ul a {
-         color: var(--gray);
-         font-size: .9rem;
-         transition: .3s
-      }
-
-      .foot-col ul a:hover {
-         color: var(--red);
-         padding-left: 5px
-      }
-
-      .socials {
-         display: flex;
-         gap: 10px
-      }
-
-      .socials a {
-         width: 40px;
-         height: 40px;
-         border-radius: 11px;
-         background: rgba(255, 255, 255, .04);
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         color: var(--gray);
-         font-size: 1rem;
-         transition: .3s
-      }
-
-      .socials a:hover {
-         background: var(--red);
-         color: #fff;
-         transform: translateY(-3px)
-      }
-
-      .foot-bot {
-         text-align: center;
-         padding: 22px;
-         border-top: 1px solid rgba(255, 255, 255, .04);
-         color: var(--gray2);
-         font-size: .82rem
-      }
-
-      /* === TOAST === */
-      .toast {
-         position: fixed;
-         bottom: 28px;
-         right: 28px;
-         background: var(--card2);
-         border: 1px solid rgba(255, 255, 255, .08);
-         border-radius: var(--r);
-         padding: 16px 24px;
-         display: flex;
-         align-items: center;
-         gap: 12px;
-         z-index: 10000;
-         max-width: 420px;
-         backdrop-filter: blur(20px);
-         box-shadow: 0 15px 40px rgba(0, 0, 0, .5);
-         transform: translateX(130%);
-         opacity: 0;
-         transition: .4s cubic-bezier(.4, 0, .2, 1)
-      }
-
-      .toast.show {
-         transform: translateX(0);
-         opacity: 1
-      }
-
-      .toast i {
-         font-size: 1.2rem;
-         flex-shrink: 0
-      }
-
-      .toast span {
-         font-size: .92rem
-      }
-
-      .toast.ok {
-         border-left: 4px solid #4caf50
-      }
-
-      .toast.ok i {
-         color: #4caf50
-      }
-
-      .toast.err {
-         border-left: 4px solid #f44336
-      }
-
-      .toast.err i {
-         color: #f44336
-      }
-
-      .toast.inf {
-         border-left: 4px solid var(--blue)
-      }
-
-      .toast.inf i {
-         color: var(--blue)
-      }
-
-      .hide {
-         display: none !important
-      }
-
-      /* === RESPONSIVE === */
-      @media(max-width:1024px) {
-         .feat-grid {
-            grid-template-columns: repeat(2, 1fr)
-         }
-
-         .foot-grid {
-            grid-template-columns: 1fr 1fr
-         }
-
-         .result-top {
-            grid-template-columns: 1fr
-         }
-      }
-
-      @media(max-width:768px) {
-         .nav-links {
-            display: none
-         }
-
-         .menu-btn {
-            display: block
-         }
-
-         .feat-grid {
-            grid-template-columns: 1fr
-         }
-
-         .steps-row {
-            flex-direction: column
-         }
-
-         .step-arr {
-            transform: rotate(90deg)
-         }
-
-         .foot-grid {
-            grid-template-columns: 1fr
-         }
-
-         .dl-grid {
-            grid-template-columns: 1fr
-         }
-
-         .dl-section {
-            padding: 0 20px 25px
-         }
-
-         .info-panel {
-            padding: 25px 20px
-         }
-      }
-
-      @media(max-width:600px) {
-         .search-wrap {
-            flex-direction: column
-         }
-
-         .go-btn {
-            justify-content: center
-         }
-
-         .cta-card {
-            padding: 40px 25px
-         }
-
-         .cta-card h2 {
-            font-size: 1.7rem
-         }
-
-         .stats {
-            gap: 25px
-         }
-
-         .stat-num {
-            font-size: 1.7rem
-         }
-      }
-   </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VidGrab - Free YouTube Downloader</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a1a;--card:#151530;--red:#ff0033;--pink:#e94560;--white:#fff;--gray:#8892b0;--gray2:#495670;--grad:linear-gradient(135deg,#ff0033,#e94560,#ff6b6b);--r:14px;--r2:20px}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px}
+.orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:.06;pointer-events:none;z-index:0}
+.orb1{width:500px;height:500px;background:#ff0033;top:-10%;left:-10%}
+header{position:fixed;top:0;left:0;width:100%;z-index:1000;transition:.3s;border-bottom:1px solid transparent}
+header.glass{background:rgba(10,10,26,.88);backdrop-filter:blur(25px);border-color:rgba(255,255,255,.04)}
+nav{max-width:1280px;margin:0 auto;padding:18px 35px;display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:12px;font-size:1.6rem;font-weight:800;cursor:pointer}
+.logo-icon{width:42px;height:42px;background:var(--grad);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:130px 30px 70px;position:relative;z-index:1}
+.hero-inner{text-align:center;max-width:850px;width:100%}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;background:rgba(255,0,51,.08);border:1px solid rgba(255,0,51,.25);border-radius:50px;font-size:.85rem;color:var(--pink);font-weight:600;margin-bottom:28px}
+.pill-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse2 1.5s infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(2.2rem,5.5vw,4rem);font-weight:900;line-height:1.1;margin-bottom:22px}
+.grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-inner>p{font-size:1.15rem;color:var(--gray);margin-bottom:42px}
+.search-box{max-width:720px;margin:0 auto 25px}
+.search-wrap{display:flex;gap:10px;padding:8px;background:var(--card);border:2px solid rgba(255,255,255,.06);border-radius:16px;transition:.3s}
+.search-wrap:focus-within{border-color:var(--red);box-shadow:0 0 40px rgba(255,0,51,.1)}
+.search-input-wrap{flex:1;position:relative;display:flex;align-items:center}
+.search-input-wrap>i{position:absolute;left:16px;color:var(--gray2)}
+.search-input-wrap input{width:100%;padding:16px 45px 16px 48px;background:transparent;border:none;color:var(--white);font-size:1.05rem;outline:none}
+.clr-btn{position:absolute;right:12px;background:rgba(255,255,255,.06);border:none;color:var(--gray);width:28px;height:28px;border-radius:50%;display:none;align-items:center;justify-content:center;cursor:pointer}
+.clr-btn.show{display:flex}
+.go-btn{padding:16px 32px;background:var(--grad);border-radius:12px;color:#fff;font-weight:700;display:flex;align-items:center;gap:10px;white-space:nowrap;cursor:pointer;transition:.3s;border:none}
+.go-btn:hover{transform:translateY(-2px);box-shadow:0 12px 35px rgba(255,0,51,.35)}
+.go-btn:disabled{opacity:.5;cursor:not-allowed}
+.tags{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:15px}
+.tags span{color:var(--gray);font-size:.87rem;display:flex;align-items:center;gap:5px}
+.tags span i{color:#4caf50;font-size:.7rem}
+.example{color:var(--gray2);font-size:.82rem;margin-bottom:50px}
+.example a{color:var(--pink);cursor:pointer;border-bottom:1px dashed var(--pink)}
+.stats{display:flex;justify-content:center;gap:55px;flex-wrap:wrap}
+.stat-num{font-size:2.2rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{font-size:.82rem;color:var(--gray)}
+.loader{text-align:center;padding:60px 30px;position:relative;z-index:1}
+.load-anim{width:60px;height:60px;margin:0 auto 20px;position:relative}
+.load-anim::before{content:'';position:absolute;inset:0;border:3px solid transparent;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result{padding:30px;position:relative;z-index:1}
+.result-card{max-width:1080px;margin:0 auto;background:var(--card);border-radius:var(--r2);overflow:hidden;border:1px solid rgba(255,255,255,.05);animation:slideUp .5s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.result-top{display:grid;grid-template-columns:440px 1fr}
+.thumb-wrap{position:relative;overflow:hidden;background:#000}
+.thumb-wrap img{width:100%;height:100%;object-fit:cover;min-height:260px}
+.thumb-dur{position:absolute;bottom:14px;right:14px;background:rgba(0,0,0,.85);color:#fff;padding:5px 14px;border-radius:8px;font-size:.82rem;font-weight:700;z-index:2}
+.info-panel{padding:35px}
+.info-panel h2{font-size:1.45rem;font-weight:700;margin-bottom:16px}
+.meta{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:14px}
+.meta span{color:var(--gray);font-size:.87rem;display:flex;align-items:center;gap:7px}
+.meta span i{color:var(--red);font-size:.8rem}
+.desc{color:var(--gray);font-size:.88rem;margin-bottom:28px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dl-section{padding:0 35px 35px}
+.dl-header{display:flex;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:15px}
+.dl-header h3{font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.dl-tabs{display:flex;gap:6px;background:rgba(255,255,255,.04);border-radius:10px;padding:4px}
+.dl-tab{padding:10px 20px;border-radius:8px;font-size:.88rem;font-weight:600;color:var(--gray);cursor:pointer;background:transparent;border:none}
+.dl-tab.active{background:var(--red);color:#fff}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.dl-card{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;cursor:pointer;color:var(--white);transition:.3s;text-decoration:none}
+.dl-card:hover{background:rgba(255,0,51,.08);border-color:rgba(255,0,51,.3);transform:translateY(-3px)}
+.dl-card-icon{width:40px;height:40px;border-radius:10px;background:rgba(255,0,51,.1);display:flex;align-items:center;justify-content:center;color:var(--red)}
+.toast{position:fixed;bottom:28px;right:28px;background:#1a1a3e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 24px;display:flex;align-items:center;gap:12px;z-index:10000;max-width:420px;transform:translateX(130%);transition:.4s}
+.toast.show{transform:translateX(0)}
+.toast.ok{border-left:4px solid #4caf50}.toast.ok i{color:#4caf50}
+.toast.err{border-left:4px solid #f44336}.toast.err i{color:#f44336}
+.toast.inf{border-left:4px solid #667eea}.toast.inf i{color:#667eea}
+.hide{display:none!important}
+.dl-card.loading{opacity:.6;pointer-events:none}
+@media(max-width:768px){.result-top{grid-template-columns:1fr}.dl-grid{grid-template-columns:1fr}}
+</style>
 </head>
-
 <body>
+<div class="bg-grid"></div>
+<div class="orb orb1"></div>
+<header id="hdr"><nav><div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})"><div class="logo-icon"><i class="fas fa-play"></i></div><span>VidGrab</span></div></nav></header>
 
-   <div class="bg-grid"></div>
-   <div class="orb orb1"></div>
-   <div class="orb orb2"></div>
-   <div class="orb orb3"></div>
-   <div class="particles" id="particles"></div>
+<section class="hero">
+<div class="hero-inner">
+<div class="pill"><span class="pill-dot"></span> Free • Fast • No Signup</div>
+<h1>Download YouTube Videos<br><span class="grad">In Seconds</span></h1>
+<p>Paste any YouTube link below — get direct download links instantly.</p>
+<div class="search-box">
+<div class="search-wrap" id="searchWrap">
+<div class="search-input-wrap">
+<i class="fas fa-link"></i>
+<input type="text" id="urlInput" placeholder="Paste YouTube URL here..." autocomplete="off">
+<button class="clr-btn" id="clrBtn"><i class="fas fa-times"></i></button>
+</div>
+<button class="go-btn" id="goBtn"><i class="fas fa-download"></i><span>Download</span></button>
+</div>
+</div>
+<div class="tags"><span><i class="fas fa-check-circle"></i> MP4</span><span><i class="fas fa-check-circle"></i> MP3</span><span><i class="fas fa-check-circle"></i> 4K</span><span><i class="fas fa-check-circle"></i> 1080p</span></div>
+<p class="example">Try: <a id="demoLink">https://www.youtube.com/watch?v=dQw4w9WgXcQ</a></p>
+<div class="stats"><div><div class="stat-num">3.2M+</div><div class="stat-lbl">Downloads</div></div><div><div class="stat-num">100%</div><div class="stat-lbl">Free</div></div><div><div class="stat-num">4K</div><div class="stat-lbl">Max Quality</div></div></div>
+</div>
+</section>
 
-   <!-- HEADER -->
-   <header id="hdr">
-      <nav>
-         <div class="logo" onclick="scrollTop()">
-            <div class="logo-icon"><i class="fas fa-play"></i></div><span>VidGrab</span>
-         </div>
-         <ul class="nav-links">
-            <li><a href="#home">Home</a></li>
-            <li><a href="#steps">How It Works</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="https://github.com" target="_blank" class="gh-btn"><i class="fab fa-github"></i> GitHub</a>
-            </li>
-         </ul>
-         <button class="menu-btn"
-            onclick="document.querySelector('.nav-links').style.display=document.querySelector('.nav-links').style.display==='flex'?'none':'flex'"><i
-               class="fas fa-bars"></i></button>
-      </nav>
-   </header>
+<div id="loader" class="loader hide"><div class="load-anim"></div><p>Fetching video info...</p></div>
+<div id="errorBox" class="hide" style="max-width:500px;margin:0 auto 30px;padding:30px;background:var(--card);border-radius:20px;text-align:center;position:relative;z-index:1"><i class="fas fa-exclamation-triangle" style="font-size:2rem;color:#f44336"></i><h3 style="margin:12px 0 8px">Oops!</h3><p id="errMsg" style="color:var(--gray);margin-bottom:18px"></p><button onclick="document.getElementById('errorBox').classList.add('hide')" style="padding:10px 24px;background:var(--grad);border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer">Try Again</button></div>
 
-   <!-- HERO -->
-   <section id="home" class="hero">
-      <div class="hero-inner">
-         <div class="pill"><span class="pill-dot"></span> Free • Fast • No Signup Required</div>
-         <h1>Download YouTube Videos<br><span class="grad">In Seconds</span></h1>
-         <p>Paste any YouTube link below — grab videos in MP4, MP3, 4K, HD quality. Unlimited downloads, zero cost.</p>
+<section id="resultSection" class="result hide">
+<div class="result-card">
+<div class="result-top">
+<div class="thumb-wrap"><img id="rThumb" src="" alt=""><div class="thumb-dur" id="rDur">▶</div></div>
+<div class="info-panel"><h2 id="rTitle"></h2><div class="meta"><span id="rAuthor"><i class="fas fa-user"></i></span><span id="rViews"><i class="fas fa-eye"></i></span></div><p class="desc" id="rDesc"></p></div>
+</div>
+<div class="dl-section">
+<div class="dl-header"><h3><i class="fas fa-cloud-download-alt" style="color:var(--red)"></i> Download Options</h3><div class="dl-tabs"><button class="dl-tab active" onclick="switchTab('video',this)">Video</button><button class="dl-tab" onclick="switchTab('audio',this)">Audio</button></div></div>
+<div id="dlVideo" class="dl-grid"></div>
+<div id="dlAudio" class="dl-grid hide"></div>
+<p style="margin-top:15px;font-size:.82rem;color:var(--gray2);text-align:center"><i class="fas fa-info-circle"></i> Click downloads directly. If one fails, try another quality.</p>
+</div>
+</div>
+</section>
 
-         <div class="search-box">
-            <div class="search-wrap" id="searchWrap">
-               <div class="search-input-wrap">
-                  <i class="fas fa-link"></i>
-                  <input type="text" id="urlInput" placeholder="Paste YouTube URL here..." autocomplete="off"
-                     spellcheck="false">
-                  <button class="clr-btn" id="clrBtn"><i class="fas fa-times"></i></button>
-               </div>
-               <button class="go-btn" id="goBtn"><i class="fas fa-download"></i><span>Download</span></button>
-            </div>
-         </div>
+<div id="toast" class="toast"><i class="fas fa-info-circle"></i><span id="toastTxt"></span></div>
 
-         <div class="tags">
-            <span><i class="fas fa-check-circle"></i> MP4</span>
-            <span><i class="fas fa-check-circle"></i> MP3</span>
-            <span><i class="fas fa-check-circle"></i> WebM</span>
-            <span><i class="fas fa-check-circle"></i> 4K</span>
-            <span><i class="fas fa-check-circle"></i> 1080p</span>
-            <span><i class="fas fa-check-circle"></i> 720p</span>
-         </div>
+<script>
+let currentVid='', currentUrl='';
+const inp=document.getElementById('urlInput'), clr=document.getElementById('clrBtn'), goBtn=document.getElementById('goBtn'), loader=document.getElementById('loader'), errBox=document.getElementById('errorBox'), result=document.getElementById('resultSection');
 
-         <p class="example">Try it: <a id="demoLink">https://www.youtube.com/watch?v=dQw4w9WgXcQ</a></p>
+window.addEventListener('scroll',()=>document.getElementById('hdr').classList.toggle('glass',window.scrollY>60));
+inp.addEventListener('input',()=>clr.classList.toggle('show',inp.value.length>0));
+clr.addEventListener('click',()=>{inp.value='';clr.classList.remove('show');inp.focus()});
+inp.addEventListener('keydown',e=>{if(e.key==='Enter')goBtn.click()});
+document.getElementById('demoLink').addEventListener('click',()=>{inp.value='https://www.youtube.com/watch?v=dQw4w9WgXcQ';clr.classList.add('show');goBtn.click()});
 
-         <div class="stats">
-            <div class="stat">
-               <div class="stat-num" id="ctr">0</div>
-               <div class="stat-lbl">Downloads</div>
-            </div>
-            <div class="stat">
-               <div class="stat-num">100%</div>
-               <div class="stat-lbl">Free</div>
-            </div>
-            <div class="stat">
-               <div class="stat-num">4K</div>
-               <div class="stat-lbl">Max Quality</div>
-            </div>
-            <div class="stat">
-               <div class="stat-num">24/7</div>
-               <div class="stat-lbl">Uptime</div>
-            </div>
-         </div>
-      </div>
-   </section>
+function isValidYT(u){return /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)[\w-]{11}/.test(u)}
+function extractId(u){const m=u.match(/(?:v=|v\/|embed\/|youtu\.be\/|shorts\/)([\w-]{11})/);return m?m[1]:null}
 
-   <!-- LOADER -->
-   <div id="loader" class="loader hide">
-      <div class="load-anim"></div>
-      <p>Fetching video info...</p>
-      <p class="sub">This may take a few seconds</p>
-   </div>
+goBtn.addEventListener('click',async()=>{
+  const url=inp.value.trim();
+  if(!url){toast('Please paste a YouTube URL','err');return}
+  if(!isValidYT(url)){toast('Invalid YouTube URL','err');return}
+  const vid=extractId(url);
+  if(!vid){toast('Could not extract video ID','err');return}
+  currentVid=vid; currentUrl=url;
+  loader.classList.remove('hide'); result.classList.add('hide'); errBox.classList.add('hide');
+  goBtn.disabled=true; goBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i><span>Fetching...</span>';
+  try{
+    const res=await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vid}`);
+    const data=await res.json();
+    renderResult({id:vid,title:data.title||'YouTube Video',author:data.author_name||'YouTube',thumb:`https://img.youtube.com/vi/${vid}/maxresdefault.jpg`,fallback:`https://img.youtube.com/vi/${vid}/hqdefault.jpg`});
+  }catch(e){
+    renderResult({id:vid,title:'YouTube Video ('+vid+')',author:'YouTube',thumb:`https://img.youtube.com/vi/${vid}/maxresdefault.jpg`,fallback:`https://img.youtube.com/vi/${vid}/hqdefault.jpg`});
+  }finally{
+    loader.classList.add('hide'); goBtn.disabled=false; goBtn.innerHTML='<i class="fas fa-download"></i><span>Download</span>';
+  }
+});
 
-   <!-- ERROR -->
-   <div id="errorBox" class="err-box hide" style="margin:30px auto">
-      <i class="fas fa-exclamation-triangle"></i>
-      <h3 id="errTitle">Oops!</h3>
-      <p id="errMsg">Something went wrong.</p>
-      <button
-         onclick="document.getElementById('errorBox').classList.add('hide');document.getElementById('urlInput').focus()">Try
-         Again</button>
-   </div>
+function renderResult(v){
+  const img=document.getElementById('rThumb'); img.src=v.thumb; img.onerror=function(){this.src=v.fallback};
+  document.getElementById('rTitle').textContent=v.title;
+  document.getElementById('rAuthor').innerHTML=`<i class="fas fa-user"></i> ${v.author}`;
+  document.getElementById('rViews').innerHTML=`<i class="fas fa-check-circle"></i> Ready to download`;
+  document.getElementById('rDesc').textContent='Click a quality below to download. Uses direct download servers - no waiting.';
+  buildDownloads(v.id); result.classList.remove('hide');
+  setTimeout(()=>result.scrollIntoView({behavior:'smooth'}),150);
+  toast('Video found! Choose quality below','ok');
+}
 
-   <!-- RESULT -->
-   <section id="resultSection" class="result hide">
-      <div class="result-card">
-         <div class="result-top">
-            <div class="thumb-wrap">
-               <img id="rThumb" src="" alt="Thumbnail">
-               <div class="thumb-overlay"></div>
-               <div class="thumb-dur" id="rDur">0:00</div>
-               <div class="thumb-play" onclick="window.open('https://youtube.com/watch?v='+currentVid,'_blank')"><i
-                     class="fas fa-play"></i></div>
-            </div>
-            <div class="info-panel">
-               <h2 id="rTitle"></h2>
-               <div class="meta">
-                  <span id="rAuthor"><i class="fas fa-user"></i></span>
-                  <span id="rViews"><i class="fas fa-eye"></i></span>
-                  <span id="rDate"><i class="fas fa-calendar"></i></span>
-               </div>
-               <p class="desc" id="rDesc"></p>
-            </div>
-         </div>
+function buildDownloads(vid){
+  const vGrid=document.getElementById('dlVideo'), aGrid=document.getElementById('dlAudio');
+  vGrid.innerHTML=''; aGrid.innerHTML='';
+  const yt = `https://www.youtube.com/watch?v=${vid}`;
+  
+  const videos=[
+    {q:'1080p Full HD',d:'MP4 • Best',qual:'1080'},
+    {q:'720p HD',d:'MP4 • HD',qual:'720'},
+    {q:'480p',d:'MP4 • Standard',qual:'480'},
+    {q:'360p',d:'MP4 • Small',qual:'360'},
+  ];
+  const audios=[
+    {q:'320 kbps',d:'MP3 • Best',qual:'max'},
+    {q:'128 kbps',d:'MP3 • Small',qual:'128'},
+  ];
 
-         <div class="dl-section">
-            <div class="dl-header">
-               <h3><i class="fas fa-cloud-download-alt"></i> Download Options</h3>
-               <div class="dl-tabs">
-                  <button class="dl-tab active" onclick="switchTab('video',this)"><i class="fas fa-video"></i>
-                     Video</button>
-                  <button class="dl-tab" onclick="switchTab('audio',this)"><i class="fas fa-music"></i> Audio</button>
-               </div>
-            </div>
-            <div id="dlVideo" class="dl-grid"></div>
-            <div id="dlAudio" class="dl-grid hide"></div>
-            <div class="dl-note"><i class="fas fa-info-circle"></i><span>Click a button below — you'll be redirected to
-                  the download page. If one service doesn't work, try another quality option.</span></div>
-         </div>
-      </div>
-   </section>
+  videos.forEach(o=>{
+    const a=document.createElement('a'); a.className='dl-card'; a.href='#';
+    a.innerHTML=`<div><div style="font-weight:700">${o.q}</div><div style="color:var(--gray);font-size:.78rem">${o.d}</div></div><div class="dl-card-icon"><i class="fas fa-download"></i></div>`;
+    a.onclick=async(e)=>{e.preventDefault(); await doDownload(yt, o.qual, false, a)};
+    vGrid.appendChild(a);
+  });
+  audios.forEach(o=>{
+    const a=document.createElement('a'); a.className='dl-card'; a.href='#';
+    a.innerHTML=`<div><div style="font-weight:700">${o.q}</div><div style="color:var(--gray);font-size:.78rem">${o.d}</div></div><div class="dl-card-icon"><i class="fas fa-music"></i></div>`;
+    a.onclick=async(e)=>{e.preventDefault(); await doDownload(yt, o.qual, true, a)};
+    aGrid.appendChild(a);
+  });
+}
 
-   <!-- HOW IT WORKS -->
-   <section id="steps" class="section alt">
-      <h2 class="sec-t">How It Works</h2>
-      <p class="sec-s">Three simple steps to download any YouTube video</p>
-      <div class="steps-row">
-         <div class="step-card">
-            <div class="step-n">01</div>
-            <div class="step-i" style="background:var(--grad)"><i class="fas fa-copy"></i></div>
-            <h3>Copy Link</h3>
-            <p>Copy the video URL from YouTube's address bar</p>
-         </div>
-         <div class="step-arr"><i class="fas fa-chevron-right"></i></div>
-         <div class="step-card">
-            <div class="step-n">02</div>
-            <div class="step-i" style="background:var(--grad2)"><i class="fas fa-paste"></i></div>
-            <h3>Paste URL</h3>
-            <p>Paste it into the search box above and click Download</p>
-         </div>
-         <div class="step-arr"><i class="fas fa-chevron-right"></i></div>
-         <div class="step-card">
-            <div class="step-n">03</div>
-            <div class="step-i" style="background:var(--grad3)"><i class="fas fa-download"></i></div>
-            <h3>Download</h3>
-            <p>Pick your quality and save the video to your device</p>
-         </div>
-      </div>
-   </section>
+// THIS IS THE REAL DOWNLOAD FUNCTION - uses Cobalt API
+async function doDownload(youtubeUrl, quality, isAudio, btnEl){
+  const originalHTML = btnEl.innerHTML;
+  btnEl.classList.add('loading');
+  btnEl.innerHTML=`<div><div style="font-weight:700"><i class="fas fa-spinner fa-spin"></i> Processing...</div><div style="color:var(--gray);font-size:.78rem">Please wait</div></div><div class="dl-card-icon"><i class="fas fa-hourglass-half"></i></div>`;
+  
+  const apis = [
+    'https://api.cobalt.tools/api/json',
+    'https://co.wuk.sh/api/json'
+  ];
 
-   <!-- FEATURES -->
-   <section id="features" class="section">
-      <h2 class="sec-t">Why Choose VidGrab?</h2>
-      <p class="sec-s">Built for speed, simplicity and reliability</p>
-      <div class="feat-grid">
-         <div class="feat-card">
-            <div class="feat-i fi-r"><i class="fas fa-bolt"></i></div>
-            <h3>Blazing Fast</h3>
-            <p>Optimized pipeline delivers downloads at maximum speed — no throttling.</p>
-         </div>
-         <div class="feat-card">
-            <div class="feat-i fi-b"><i class="fas fa-shield-alt"></i></div>
-            <h3>100% Secure</h3>
-            <p>No malware, no tracking, no data collection. Your privacy matters.</p>
-         </div>
-         <div class="feat-card">
-            <div class="feat-i fi-g"><i class="fas fa-infinity"></i></div>
-            <h3>Unlimited</h3>
-            <p>No daily caps, no file size limits. Download as much as you want.</p>
-         </div>
-         <div class="feat-card">
-            <div class="feat-i fi-p"><i class="fas fa-tv"></i></div>
-            <h3>4K Ultra HD</h3>
-            <p>Full support from 360p to 4K. Get the best quality available.</p>
-         </div>
-         <div class="feat-card">
-            <div class="feat-i fi-o"><i class="fas fa-headphones"></i></div>
-            <h3>Audio Extract</h3>
-            <p>Rip audio in MP3 320kbps — perfect for music and podcasts.</p>
-         </div>
-         <div class="feat-card">
-            <div class="feat-i fi-pk"><i class="fas fa-mobile-alt"></i></div>
-            <h3>All Devices</h3>
-            <p>Desktop, tablet, phone — works everywhere. No app needed.</p>
-         </div>
-      </div>
-   </section>
-
-   <!-- FAQ -->
-   <section id="faq" class="section alt">
-      <h2 class="sec-t">FAQ</h2>
-      <p class="sec-s">Common questions, quick answers</p>
-      <div class="faq-list">
-         <div class="faq-item">
-            <div class="faq-q"><span>Is it really 100% free?</span><i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">
-               <p>Yes — completely free with no hidden charges, no subscriptions, and no sign-up required.</p>
-            </div>
-         </div>
-         <div class="faq-item">
-            <div class="faq-q"><span>What video/audio formats are supported?</span><i class="fas fa-chevron-down"></i>
-            </div>
-            <div class="faq-a">
-               <p>Video: MP4, WebM in 360p–4K. Audio: MP3 at 128/192/320kbps. All common formats covered.</p>
-            </div>
-         </div>
-         <div class="faq-item">
-            <div class="faq-q"><span>Do I need to install software?</span><i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">
-               <p>No installation needed. Everything works directly in your web browser on any device.</p>
-            </div>
-         </div>
-         <div class="faq-item">
-            <div class="faq-q"><span>Can I extract audio from a video?</span><i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">
-               <p>Absolutely! Switch to the Audio tab after fetching a video to get MP3 download options.</p>
-            </div>
-         </div>
-         <div class="faq-item">
-            <div class="faq-q"><span>Is there a download limit?</span><i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">
-               <p>Zero limits — download as many videos as you want, any length, any size.</p>
-            </div>
-         </div>
-         <div class="faq-item">
-            <div class="faq-q"><span>What about copyright?</span><i class="fas fa-chevron-down"></i></div>
-            <div class="faq-a">
-               <p>This tool is for personal use. Always respect copyright and content creators' rights.</p>
-            </div>
-         </div>
-      </div>
-   </section>
-
-   <!-- CTA -->
-   <section class="section">
-      <div class="cta-card">
-         <h2>Ready to <span class="grad">Grab</span> a Video?</h2>
-         <p>Jump back to the top and paste your first link. It takes 10 seconds!</p>
-         <a href="#home" class="cta-main"><i class="fas fa-rocket"></i> Start Downloading Now</a>
-      </div>
-   </section>
-
-   <!-- FOOTER -->
-   <footer>
-      <div class="foot-grid">
-         <div class="foot-col">
-            <div class="logo">
-               <div class="logo-icon"><i class="fas fa-play"></i></div><span>VidGrab</span>
-            </div>
-            <p>The fastest free YouTube video downloader. Built for everyone.</p>
-            <div class="socials"><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i
-                     class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i
-                     class="fab fa-github"></i></a></div>
-         </div>
-         <div class="foot-col">
-            <h4>Product</h4>
-            <ul>
-               <li><a href="#home">Home</a></li>
-               <li><a href="#steps">How It Works</a></li>
-               <li><a href="#features">Features</a></li>
-               <li><a href="#faq">FAQ</a></li>
-            </ul>
-         </div>
-         <div class="foot-col">
-            <h4>Formats</h4>
-            <ul>
-               <li><a href="#">MP4 Video</a></li>
-               <li><a href="#">MP3 Audio</a></li>
-               <li><a href="#">WebM</a></li>
-               <li><a href="#">4K Ultra HD</a></li>
-            </ul>
-         </div>
-         <div class="foot-col">
-            <h4>Legal</h4>
-            <ul>
-               <li><a href="#">Privacy Policy</a></li>
-               <li><a href="#">Terms of Service</a></li>
-               <li><a href="#">DMCA</a></li>
-               <li><a href="#">Contact</a></li>
-            </ul>
-         </div>
-      </div>
-      <div class="foot-bot">&copy; 2024 VidGrab. Educational purposes only. Not affiliated with YouTube.</div>
-   </footer>
-
-   <!-- TOAST -->
-   <div id="toast" class="toast"><i class="fas fa-info-circle"></i><span id="toastTxt"></span></div>
-
-   <script>
-      /* ============================
-         GLOBAL STATE
-         ============================ */
-      let currentVid = '';
-
-      /* ============================
-         PARTICLES
-         ============================ */
-      (function () {
-         const c = document.getElementById('particles');
-         const cols = ['#ff0033', '#e94560', '#667eea', '#764ba2', '#11998e', '#ff6b6b'];
-         for (let i = 0; i < 50; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            const s = Math.random() * 4 + 2;
-            p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random() * 100}%;background:${cols[i % cols.length]};animation-duration:${Math.random() * 18 + 12}s;animation-delay:${Math.random() * 18}s`;
-            c.appendChild(p);
-         }
-      })();
-
-      /* ============================
-         HEADER SCROLL
-         ============================ */
-      window.addEventListener('scroll', () => {
-         document.getElementById('hdr').classList.toggle('glass', window.scrollY > 60);
-      }, { passive: true });
-
-      /* ============================
-         SCROLL TOP
-         ============================ */
-      function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }) }
-
-      /* ============================
-         SMOOTH SCROLL
-         ============================ */
-      document.querySelectorAll('a[href^="#"]').forEach(a => {
-         a.addEventListener('click', function (e) {
-            e.preventDefault();
-            const t = document.querySelector(this.getAttribute('href'));
-            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
-         });
+  let success = false;
+  for(const api of apis){
+    try{
+      const res = await fetch(api, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({
+          url: youtubeUrl,
+          vCodec: 'h264',
+          vQuality: quality === 'max' ? '1080' : quality,
+          aFormat: 'mp3',
+          isAudioOnly: isAudio,
+          filenamePattern: 'classic'
+        })
       });
-
-      /* ============================
-         INPUT LOGIC
-         ============================ */
-      const inp = document.getElementById('urlInput');
-      const clr = document.getElementById('clrBtn');
-      const goBtn = document.getElementById('goBtn');
-      const loader = document.getElementById('loader');
-      const errBox = document.getElementById('errorBox');
-      const result = document.getElementById('resultSection');
-
-      inp.addEventListener('input', () => {
-         clr.classList.toggle('show', inp.value.length > 0);
-      });
-
-      clr.addEventListener('click', () => {
-         inp.value = '';
-         clr.classList.remove('show');
-         inp.focus();
-      });
-
-      inp.addEventListener('keydown', e => {
-         if (e.key === 'Enter') { e.preventDefault(); goBtn.click() }
-      });
-
-      /* Demo link */
-      document.getElementById('demoLink').addEventListener('click', () => {
-         inp.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-         clr.classList.add('show');
-         goBtn.click();
-      });
-
-      /* ============================
-         URL VALIDATION
-         ============================ */
-      function isValidYT(u) {
-         return /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)[\w-]{11}/.test(u);
+      const data = await res.json();
+      if(data.url){
+        // Direct download url found - trigger download
+        window.open(data.url, '_blank');
+        toast('Download started! Check your downloads','ok');
+        success = true; break;
+      } else if(data.error){
+        console.log(api + ' error: ' + data.error);
+        continue;
       }
+    }catch(e){
+      console.log(api + ' failed: ' + e.message);
+      continue;
+    }
+  }
 
-      function extractId(u) {
-         const m = u.match(/(?:v=|v\/|embed\/|youtu\.be\/|shorts\/)([\w-]{11})/);
-         return m ? m[1] : null;
-      }
+  if(!success){
+    // Fallback: open downloader sites
+    toast('Primary server busy, opening backup...','inf');
+    window.open(`https://www.y2mate.com/youtube/${currentVid}`, '_blank');
+  }
+  
+  btnEl.classList.remove('loading');
+  btnEl.innerHTML = originalHTML;
+}
 
-      /* ============================
-         MAIN FETCH
-         ============================ */
-      goBtn.addEventListener('click', async () => {
-         const url = inp.value.trim();
+function switchTab(tab,btn){
+  document.querySelectorAll('.dl-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('dlVideo').classList.toggle('hide',tab!=='video');
+  document.getElementById('dlAudio').classList.toggle('hide',tab!=='audio');
+}
+window.switchTab=switchTab;
 
-         if (!url) { toast('Please paste a YouTube URL', 'err'); inp.focus(); return }
-         if (!isValidYT(url)) { toast('That doesn\'t look like a valid YouTube URL', 'err'); return }
-
-         const vid = extractId(url);
-         if (!vid) { toast('Could not extract video ID', 'err'); return }
-
-         currentVid = vid;
-
-         /* UI states */
-         loader.classList.remove('hide');
-         result.classList.add('hide');
-         errBox.classList.add('hide');
-         goBtn.disabled = true;
-         goBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Fetching...</span>';
-
-         try {
-            /* Use noembed API — free, no API key, CORS-friendly */
-            const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vid}`);
-            if (!res.ok) throw new Error('Network error');
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-
-            renderResult({
-               id: vid,
-               title: data.title || 'YouTube Video',
-               author: data.author_name || 'Unknown Channel',
-               authorUrl: data.author_url || '#',
-               thumb: `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`,
-               thumbFallback: `https://img.youtube.com/vi/${vid}/hqdefault.jpg`,
-            });
-         } catch (e) {
-            /* Fallback — still show with thumbnail */
-            try {
-               renderResult({
-                  id: vid,
-                  title: 'YouTube Video (' + vid + ')',
-                  author: 'YouTube',
-                  authorUrl: 'https://youtube.com',
-                  thumb: `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`,
-                  thumbFallback: `https://img.youtube.com/vi/${vid}/hqdefault.jpg`,
-               });
-            } catch (e2) {
-               showError('Failed to load video', 'Please check the URL and try again.');
-            }
-         } finally {
-            loader.classList.add('hide');
-            goBtn.disabled = false;
-            goBtn.innerHTML = '<i class="fas fa-download"></i><span>Download</span>';
-         }
-      });
-
-      /* ============================
-         RENDER RESULT
-         ============================ */
-      function renderResult(v) {
-         const thumb = document.getElementById('rThumb');
-         thumb.src = v.thumb;
-         thumb.onerror = function () { this.src = v.thumbFallback; this.onerror = null };
-
-         document.getElementById('rTitle').textContent = v.title;
-         document.getElementById('rAuthor').innerHTML = `<i class="fas fa-user"></i> ${v.author}`;
-         document.getElementById('rViews').innerHTML = '<i class="fas fa-play-circle"></i> YouTube Video';
-         document.getElementById('rDate').innerHTML = '<i class="fas fa-check-circle"></i> Ready to download';
-         document.getElementById('rDur').textContent = '▶ Play';
-         document.getElementById('rDesc').textContent = 'Select a format and quality below to download this video. Multiple download services available.';
-
-         /* Build download buttons */
-         buildDownloads(v.id);
-
-         result.classList.remove('hide');
-         setTimeout(() => result.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
-         toast('Video found! Choose your format below.', 'ok');
-      }
-
-      /* ============================
-         BUILD DOWNLOAD BUTTONS
-         ============================ */
-      function buildDownloads(vid) {
-         const vGrid = document.getElementById('dlVideo');
-         const aGrid = document.getElementById('dlAudio');
-         vGrid.innerHTML = '';
-         aGrid.innerHTML = '';
-
-         /* Multiple real download services */
-         const ytUrl = encodeURIComponent(`https://www.youtube.com/watch?v=${vid}`);
-
-         const videoOptions = [
-            { q: '2160p (4K)', det: 'MP4 • Ultra HD', icon: 'fa-gem', url: `https://10downloader.com/download?v=https://www.youtube.com/watch?v=${vid}` },
-            { q: '1080p Full HD', det: 'MP4 • Best Quality', icon: 'fa-star', url: `https://www.y2mate.com/youtube/${vid}` },
-            { q: '1080p Alt', det: 'MP4 • Service 2', icon: 'fa-download', url: `https://ssyoutube.com/watch?v=${vid}` },
-            { q: '720p HD', det: 'MP4 • High Quality', icon: 'fa-video', url: `https://www.savefrom.net/#url=https://www.youtube.com/watch?v=${vid}` },
-            { q: '720p Alt', det: 'MP4 • Service 2', icon: 'fa-download', url: `https://yt1s.com/youtube-to-mp4?q=${ytUrl}` },
-            { q: '480p', det: 'MP4 • Standard', icon: 'fa-film', url: `https://ytshorts.savetube.me/youtube-to-mp4?v=${vid}` },
-            { q: '360p', det: 'MP4 • Low Data', icon: 'fa-mobile-alt', url: `https://loader.to/en/youtube-downloader.html?url=${ytUrl}` },
-            { q: 'All Formats', det: 'Choose any quality', icon: 'fa-th', url: `https://9xbuddy.com/process?url=https://www.youtube.com/watch?v=${vid}` },
-         ];
-
-         const audioOptions = [
-            { q: '320 kbps', det: 'MP3 • Best Audio', icon: 'fa-headphones', url: `https://www.y2mate.com/youtube-mp3/${vid}` },
-            { q: '320 kbps Alt', det: 'MP3 • Service 2', icon: 'fa-music', url: `https://yt1s.com/youtube-to-mp3?q=${ytUrl}` },
-            { q: '256 kbps', det: 'MP3 • High Quality', icon: 'fa-volume-up', url: `https://loader.to/en/youtube-mp3-downloader.html?url=${ytUrl}` },
-            { q: '192 kbps', det: 'MP3 • Standard', icon: 'fa-headphones-alt', url: `https://10downloader.com/download?v=https://www.youtube.com/watch?v=${vid}` },
-            { q: '128 kbps', det: 'MP3 • Small File', icon: 'fa-compact-disc', url: `https://ssyoutube.com/watch?v=${vid}` },
-            { q: 'All Audio', det: 'Choose bitrate', icon: 'fa-th', url: `https://9xbuddy.com/process?url=https://www.youtube.com/watch?v=${vid}` },
-         ];
-
-         videoOptions.forEach(opt => {
-            const a = document.createElement('a');
-            a.className = 'dl-card';
-            a.href = opt.url;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            a.innerHTML = `<div class="dl-card-info"><div class="qual">${opt.q}</div><div class="detail">${opt.det}</div></div><div class="dl-card-icon"><i class="fas ${opt.icon}"></i></div>`;
-            a.addEventListener('click', () => toast('Opening download page...', 'ok'));
-            vGrid.appendChild(a);
-         });
-
-         audioOptions.forEach(opt => {
-            const a = document.createElement('a');
-            a.className = 'dl-card';
-            a.href = opt.url;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            a.innerHTML = `<div class="dl-card-info"><div class="qual">${opt.q}</div><div class="detail">${opt.det}</div></div><div class="dl-card-icon"><i class="fas ${opt.icon}"></i></div>`;
-            a.addEventListener('click', () => toast('Opening audio download...', 'ok'));
-            aGrid.appendChild(a);
-         });
-      }
-
-      /* ============================
-         DOWNLOAD TABS
-         ============================ */
-      function switchTab(tab, btn) {
-         document.querySelectorAll('.dl-tab').forEach(t => t.classList.remove('active'));
-         btn.classList.add('active');
-         document.getElementById('dlVideo').classList.toggle('hide', tab !== 'video');
-         document.getElementById('dlAudio').classList.toggle('hide', tab !== 'audio');
-      }
-      /* Expose to onclick */
-      window.switchTab = switchTab;
-
-      /* ============================
-         ERROR DISPLAY
-         ============================ */
-      function showError(title, msg) {
-         document.getElementById('errTitle').textContent = title;
-         document.getElementById('errMsg').textContent = msg;
-         errBox.classList.remove('hide');
-         result.classList.add('hide');
-      }
-
-      /* ============================
-         FAQ TOGGLE
-         ============================ */
-      document.querySelectorAll('.faq-q').forEach(q => {
-         q.addEventListener('click', () => {
-            const item = q.parentElement;
-            const open = item.classList.contains('on');
-            document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('on'));
-            if (!open) item.classList.add('on');
-         });
-      });
-
-      /* ============================
-         TOAST
-         ============================ */
-      let toastT;
-      function toast(msg, type = 'inf') {
-         const t = document.getElementById('toast');
-         const txt = document.getElementById('toastTxt');
-         const ic = t.querySelector('i');
-         clearTimeout(toastT);
-         t.className = 'toast';
-         txt.textContent = msg;
-         t.classList.add(type);
-         ic.className = type === 'ok' ? 'fas fa-check-circle' : type === 'err' ? 'fas fa-exclamation-circle' : 'fas fa-info-circle';
-         requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
-         toastT = setTimeout(() => t.classList.remove('show'), 4000);
-      }
-
-      /* ============================
-         COUNTER ANIMATION
-         ============================ */
-      const ctrObs = new IntersectionObserver(entries => {
-         entries.forEach(e => {
-            if (e.isIntersecting) { animateCtr(); ctrObs.unobserve(e.target) }
-         });
-      }, { threshold: 0.3 });
-      ctrObs.observe(document.querySelector('.stats'));
-
-      function animateCtr() {
-         const el = document.getElementById('ctr');
-         let c = 0; const tgt = 3200000;
-         (function tick() {
-            c += tgt / 120;
-            if (c >= tgt) { el.textContent = '3.2M+'; return }
-            el.textContent = c >= 1e6 ? (c / 1e6).toFixed(1) + 'M+' : c >= 1e3 ? Math.floor(c / 1e3) + 'K+' : Math.floor(c) + '';
-            requestAnimationFrame(tick);
-         })();
-      }
-
-      /* ============================
-         SCROLL REVEAL
-         ============================ */
-      const revObs = new IntersectionObserver(entries => {
-         entries.forEach(e => {
-            if (e.isIntersecting) {
-               e.target.style.opacity = '1';
-               e.target.style.transform = 'translateY(0)';
-               revObs.unobserve(e.target);
-            }
-         });
-      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-      document.querySelectorAll('.step-card,.feat-card,.faq-item,.cta-card').forEach((el, i) => {
-         el.style.opacity = '0';
-         el.style.transform = 'translateY(35px)';
-         el.style.transition = `all .65s cubic-bezier(.22,1,.36,1) ${(i % 6) * 0.08}s`;
-         revObs.observe(el);
-      });
-
-      /* ============================
-         KEYBOARD SHORTCUT
-         ============================ */
-      document.addEventListener('keydown', e => {
-         if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); inp.focus(); inp.select() }
-      });
-
-      /* ============================
-         AUTO PASTE ON FOCUS
-         ============================ */
-      inp.addEventListener('focus', async () => {
-         if (inp.value) return;
-         try {
-            const txt = await navigator.clipboard.readText();
-            if (isValidYT(txt)) {
-               inp.value = txt;
-               clr.classList.add('show');
-               toast('YouTube URL detected in clipboard!', 'inf');
-            }
-         } catch (e) { }
-      });
-
-      /* Initial focus */
-      setTimeout(() => inp.focus(), 800);
-   </script>
+let toastT;
+function toast(msg,type='inf'){
+  const t=document.getElementById('toast'), txt=document.getElementById('toastTxt'), ic=t.querySelector('i');
+  clearTimeout(toastT); t.className='toast'; txt.textContent=msg; t.classList.add(type);
+  ic.className=type==='ok'?'fas fa-check-circle':type==='err'?'fas fa-exclamation-circle':'fas fa-info-circle';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  toastT=setTimeout(()=>t.classList.remove('show'),4000);
+}
+</script>
 </body>
-
 </html>
